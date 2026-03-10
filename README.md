@@ -38,8 +38,6 @@ No other dependencies are needed — the tool uses only the Python standard libr
 
 Source code: [github.com/NeoSkillFactory/py-test-creator](https://github.com/NeoSkillFactory/py-test-creator)
 
-**Price suggestion:** $19.99 USD
-
 ## License
 
 MIT © NeoSkillFactory
