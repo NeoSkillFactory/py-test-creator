@@ -9,6 +9,7 @@ It can be called directly or via the CLI module.
 import sys
 import os
 from pathlib import Path
+from typing import Optional
 
 # Add current directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))

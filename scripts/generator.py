@@ -196,6 +196,8 @@ class TestGenerator:
     def _write_edge_case_tests(self, func: Function, test_prefix: str):
         """Write edge case tests based on parameter types."""
         for param in func.parameters:
+            if param.name in ("self", "cls") or param.kind in ("var_positional", "var_keyword"):
+                continue
             if param.annotation:
                 test_name = f"{test_prefix}_{param.name}_edge_cases"
                 docstring = f"Test {func.name} with edge case values for {param.name}."
@@ -258,6 +260,11 @@ class TestGenerator:
         """
         args = []
         for param in parameters:
+            # Skip self/cls and *args/**kwargs
+            if param.name in ("self", "cls"):
+                continue
+            if param.kind in ("var_positional", "var_keyword"):
+                continue
             example = self._get_type_example(param)
             args.append(f"{param.name}={example}")
         return ", ".join(args)
@@ -292,7 +299,11 @@ class TestGenerator:
         # Handle generic types like List[int], Dict[str, int], etc.
         if "[" in annotation:
             base_type = annotation.split("[")[0]
-            return type_examples.get(base_type, "None")
+            result = type_examples.get(base_type)
+            if result is None:
+                # Try lowercase for typing module types (List -> list, Dict -> dict)
+                result = type_examples.get(base_type.lower(), "None")
+            return result
 
         return type_examples.get(annotation, "None")
 

@@ -18,13 +18,13 @@ description: Automatically generates pytest-compatible unit test templates from 
 
 ## Installation
 
-Dependencies are managed via `package.json`. Install with:
+Requires Python 3.9+ and pytest:
 
 ```bash
-npm install
+pip install pytest
 ```
 
-This will install the required Python packages (pytest, ast-parser utilities) and Node.js dependencies for the skill runner.
+No other dependencies are needed — the tool uses only the Python standard library.
 
 ## Usage
 
@@ -62,25 +62,30 @@ def add(a: int, b: int) -> int:
 Output (`test_utils.py`):
 ```python
 import pytest
-from utils import add
+from utils import *
 
-def test_add_basic_integers():
-    """Test add function with basic positive integers."""
-    assert add(1, 2) == 3
+def test_add_basic():
+    """Test add with basic valid arguments."""
+    result = add(a=42, b=42)
+    # Expected: int
+    assert result is not None
 
-def test_add_negative_numbers():
-    """Test add function with negative integers."""
-    assert add(-1, -2) == -3
+def test_add_a_edge_cases():
+    """Test add with edge case values for a."""
+    # Test with various valid/invalid values for int
+    pytest.skip('Edge case test needs customization')
 
-def test_add_zero():
-    """Test add function with zero."""
-    assert add(0, 5) == 5
-    assert add(5, 0) == 5
+def test_add_b_edge_cases():
+    """Test add with edge case values for b."""
+    pytest.skip('Edge case test needs customization')
 
-def test_add_large_numbers():
-    """Test add function with large integers."""
-    assert add(1000000, 2000000) == 3000000
+def test_add_required_params():
+    """Test add with required parameters only."""
+    result = add(a=42, b=42)
+    assert result is not None
 ```
+
+Edge case tests are generated as stubs for manual customization.
 
 ## Configuration
 
@@ -118,11 +123,16 @@ skill/
 ├── SKILL.md           # This documentation
 ├── package.json       # NPM package definition
 ├── README.md          # Quick start guide
-└── scripts/
-    ├── main.py        # CLI entry point
-    ├── parser.py      # Python AST parser
-    ├── generator.py   # Test template generator
-    └── cli.py         # Command-line interface
+├── scripts/
+│   ├── __init__.py
+│   ├── cli.py         # Command-line interface
+│   ├── main.py        # Programmatic entry point
+│   ├── parser.py      # Python AST parser
+│   └── generator.py   # Test template generator
+└── tests/
+    ├── test_parser.py
+    ├── test_generator.py
+    └── test_cli.py
 ```
 
 ## Resources

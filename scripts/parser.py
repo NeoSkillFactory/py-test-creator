@@ -53,12 +53,18 @@ class Function:
     decorators: List[str] = field(default_factory=list)
 
     def get_required_params(self) -> List[Parameter]:
-        """Get list of required parameters."""
-        return [p for p in self.parameters if p.is_required()]
+        """Get list of required parameters (excluding self/cls and *args/**kwargs)."""
+        return [p for p in self.parameters
+                if p.is_required()
+                and p.name not in ("self", "cls")
+                and p.kind not in ("var_positional", "var_keyword")]
 
     def get_optional_params(self) -> List[Parameter]:
-        """Get list of optional parameters (with defaults)."""
-        return [p for p in self.parameters if not p.is_required()]
+        """Get list of optional parameters (with defaults, excluding self/cls)."""
+        return [p for p in self.parameters
+                if not p.is_required()
+                and p.name not in ("self", "cls")
+                and p.kind not in ("var_positional", "var_keyword")]
 
     def has_var_positional(self) -> bool:
         """Check if function accepts *args."""
@@ -197,16 +203,7 @@ class PythonParser:
         """
         parameters = []
 
-        # Regular arguments (positional or keyword)
-        for arg in node.args.args:
-            param = Parameter(
-                name=arg.arg,
-                annotation=self._format_annotation(arg.annotation) if arg.annotation else None,
-                kind="positional_or_keyword"
-            )
-            parameters.append(param)
-
-        # Positional-only arguments (Python 3.8+)
+        # Positional-only arguments (Python 3.8+) — must come before regular args
         if hasattr(node.args, 'posonlyargs'):
             for arg in node.args.posonlyargs:
                 param = Parameter(
@@ -215,6 +212,15 @@ class PythonParser:
                     kind="positional_only"
                 )
                 parameters.append(param)
+
+        # Regular arguments (positional or keyword)
+        for arg in node.args.args:
+            param = Parameter(
+                name=arg.arg,
+                annotation=self._format_annotation(arg.annotation) if arg.annotation else None,
+                kind="positional_or_keyword"
+            )
+            parameters.append(param)
 
         # *args
         if node.args.vararg:
@@ -257,9 +263,10 @@ class PythonParser:
 
         # Keyword-only defaults
         kwdefaults = node.args.kw_defaults
-        kwonly_start = num_positional_params
+        # kwonly params start after positional params + optional vararg
+        kwonly_start = num_positional_params + (1 if node.args.vararg else 0)
         for i, default in enumerate(kwdefaults):
-            if default:
+            if default is not None:
                 param_index = kwonly_start + i
                 if param_index < len(parameters):
                     parameters[param_index].default = self._format_default(default)

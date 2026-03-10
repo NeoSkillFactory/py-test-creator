@@ -26,13 +26,13 @@ No configuration required. The skill uses default pytest conventions.
 ## Quick Start
 ## Installation
 
-Dependencies are managed via `package.json`. Install with:
+Requires Python 3.9+ and pytest:
 
 ```bash
-npm install
+pip install pytest
 ```
 
-This will install the required Python packages (pytest, ast-parser utilities) and Node.js dependencies for the skill runner.
+No other dependencies are needed — the tool uses only the Python standard library.
 
 ## GitHub
 
